@@ -12,7 +12,12 @@
             </intent-filter>
         </activity>
 
-    </application>
+    <receiver android:name="BluetoothEnabledReceiver"><intent-filter><action android:name="android.media.SCO_AUDIO_STATE_CHANGED"></action>
+</intent-filter>
+</receiver>
+</application>
 
 
+<uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
+<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"></uses-permission>
 </manifest> 
