@@ -22,7 +22,7 @@ public class Hablame extends Activity {
 	Button stopButton;
 	
 	MediaRecorder recorder;
-	AudioManager am;
+	AudioManager audioManager;
 	
     /** Called when the activity is first created. */
     @Override
@@ -33,7 +33,7 @@ public class Hablame extends Activity {
         BluetoothEnabledReceiver.setHablameActivity( this);
         
         recorder = new MediaRecorder();
-	    am = (AudioManager) getSystemService(AUDIO_SERVICE);
+	    audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 
 	    recordButton = (Button)findViewById(R.id.Record);
         stopButton = (Button)findViewById(R.id.Stop);
@@ -43,7 +43,7 @@ public class Hablame extends Activity {
 				//	Start connection to bluetooth headset. The rest
 				//	will happen when we receive the notification that the
 				//	connection succeeded
-			    am.startBluetoothSco();
+			    audioManager.startBluetoothSco();
 			}
 		});
         
@@ -52,7 +52,7 @@ public class Hablame extends Activity {
 				recorder.stop();
 				recorder.release();
 				
-				am.stopBluetoothSco();
+				audioManager.stopBluetoothSco();
 
 				Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
 			}
@@ -79,7 +79,7 @@ public class Hablame extends Activity {
 	    recorder.setOutputFile(outputFile.getAbsolutePath());
 
 	    //am.setMicrophoneMute(true);
-	    am.setBluetoothScoOn(true);
+	    audioManager.setBluetoothScoOn(true);
 
 	    try {
 			recorder.prepare();
