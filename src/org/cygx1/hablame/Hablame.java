@@ -16,13 +16,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class Hablame extends Activity {
+public class Hablame extends Activity implements View.OnClickListener {
 	
-	Button recordButton;
-	Button stopButton;
-	
+	Button button;
 	MediaRecorder recorder;
 	AudioManager audioManager;
+	
+	static final int STATE_IDLE = 0;
+	static final int STATE_RECORDING = 1;
+	static final int STATE_SENDING = 2;
+	static final int STATE_CONNECTING_BLUETOOTH = 2;
+	int state = STATE_IDLE;
 	
     /** Called when the activity is first created. */
     @Override
@@ -35,28 +39,9 @@ public class Hablame extends Activity {
         recorder = new MediaRecorder();
 	    audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 
-	    recordButton = (Button)findViewById(R.id.Record);
-        stopButton = (Button)findViewById(R.id.Stop);
+	    button = (Button)findViewById(R.id.Button01);
         
-        recordButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				//	Start connection to bluetooth headset. The rest
-				//	will happen when we receive the notification that the
-				//	connection succeeded
-			    audioManager.startBluetoothSco();
-			}
-		});
-        
-        stopButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				recorder.stop();
-				recorder.release();
-				
-				audioManager.stopBluetoothSco();
-
-				Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
-			}
-		});
+        button.setOnClickListener(this);
     }
     
     void startRecording() {
@@ -91,5 +76,32 @@ public class Hablame extends Activity {
 		}
 
 		Toast.makeText( Hablame.this, "Recording started", Toast.LENGTH_SHORT).show();
+		state = STATE_RECORDING;
+	    button.setText("Stop recording");
+	    button.setEnabled(true);
     }
+
+	public void onClick(View v) {
+		// 	TODO: Decouple / generalize / clean-up state machine implementation
+		if( state == STATE_IDLE) {
+			//	Start connection to bluetooth headset. The rest
+			//	will happen when we receive the notification that the
+			//	connection succeeded
+		    audioManager.startBluetoothSco();
+		    
+		    state = STATE_CONNECTING_BLUETOOTH;
+		    button.setText("[Connecting to bluetooth]");
+		    button.setEnabled(false);
+
+		} else if( state == STATE_RECORDING) {
+			recorder.stop();
+			recorder.release();
+			
+			audioManager.stopBluetoothSco();
+
+			Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
+			state = STATE_IDLE;
+		    button.setText("Start Recording");
+		}
+	}
 }
