@@ -1,17 +1,17 @@
 package org.cygx1.hablame;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.cygx1.hablame.HablamePreferences;
+
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.ContentValues;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -27,6 +27,8 @@ public class Hablame extends Activity implements View.OnClickListener {
 	static final int STATE_SENDING = 2;
 	static final int STATE_CONNECTING_BLUETOOTH = 2;
 	int state = STATE_IDLE;
+	
+	private static final int PREFS_ID = 0;
 	
     /** Called when the activity is first created. */
     @Override
@@ -103,5 +105,25 @@ public class Hablame extends Activity implements View.OnClickListener {
 			state = STATE_IDLE;
 		    button.setText("Start Recording");
 		}
+	}
+	
+	/**
+	 * Handle the preferences menu
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(Menu.NONE, PREFS_ID, Menu.NONE, "Prefs")
+				.setIcon(android.R.drawable.ic_menu_preferences)
+				.setAlphabeticShortcut('p');
+		return (super.onCreateOptionsMenu(menu));
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case PREFS_ID:
+			startActivity(new Intent(this, HablamePreferences.class));
+			return (true);
+		}
+		return (super.onOptionsItemSelected(item));
 	}
 }

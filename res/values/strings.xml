@@ -2,4 +2,10 @@
 <resources>
     <string name="hello">Hello World, Hablame!</string>
     <string name="app_name">Hablame</string>
+    <string name="emailPref">emailPref</string>
+	<string name="passwordPref">passwordPref</string>
+	<string name="app_prefs">Hablame Preferences</string>
+	<string name="recipientPref">recipientPref</string>
+	<string name="subjectPref">subjectPref</string>
+	<string name="defaultSubject">Recording %m/%d %I:%M%p</string>
 </resources>

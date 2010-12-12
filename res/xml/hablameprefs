@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	<EditTextPreference android:key="@string/emailPref"
+		android:persistent="true" android:title="Gmail ID" />
+	<EditTextPreference android:key="@string/passwordPref"
+		android:persistent="true" android:title="Gmail password" android:password="true" />
+	<EditTextPreference android:key="@string/recipientPref"
+		android:persistent="true" android:title="Recipient email" android:summary="Who to send it to" />
+	<EditTextPreference android:key="@string/subjectPref"
+		android:persistent="true" android:title="Subject"
+		android:summary="Email subject (supports strftime format strings)"
+		android:defaultValue="@string/defaultSubject" /> 
+</PreferenceScreen>
