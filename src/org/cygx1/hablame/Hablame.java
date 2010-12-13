@@ -3,9 +3,6 @@ package org.cygx1.hablame;
 import java.io.File;
 import java.io.IOException;
 
-import org.cygx1.hablame.HablamePreferences;
-import org.cygx1.hablame.R;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -34,6 +31,7 @@ public class Hablame extends Activity implements View.OnClickListener {
 	int state = STATE_IDLE;
 	
 	private static final int PREFS_ID = 0;
+	private static final int EMAIL_SEND_RESULT = 0;
 	
 	// To store the output file
 	static File outputFile = null;
@@ -85,7 +83,7 @@ public class Hablame extends Activity implements View.OnClickListener {
 			e.printStackTrace();
 		}
 
-		Toast.makeText( Hablame.this, "Recording started", Toast.LENGTH_SHORT).show();
+//		Toast.makeText( Hablame.this, "Recording started", Toast.LENGTH_SHORT).show();
 		state = STATE_RECORDING;
 	    button.setText("Stop recording");
 	    button.setEnabled(true);
@@ -137,7 +135,24 @@ public class Hablame extends Activity implements View.OnClickListener {
 				subject);
 		emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipient});
 		emailIntent.putExtra(android.content.Intent.EXTRA_STREAM, Uri.parse("file://" + path));
-		startActivity(emailIntent);
+		startActivityForResult(emailIntent, EMAIL_SEND_RESULT);
+	}
+	
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (EMAIL_SEND_RESULT == requestCode) {
+			// Email sending finished
+			// TODO: figure out why the result code is always 0 (RESULT_CANCELED)
+			if (RESULT_OK == resultCode) {
+				// The user sent successfully
+				Toast.makeText( Hablame.this, "Email sent successfully", Toast.LENGTH_SHORT).show();
+				return;
+			} else {
+				// They canceled sending
+				Toast.makeText( Hablame.this, "Email send canceled", Toast.LENGTH_SHORT).show();
+				return;
+			}
+		}
+		Toast.makeText( Hablame.this, "Unexpected activity result found", Toast.LENGTH_SHORT).show();
 	}
 	
 	/**
