@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.util.Log;
 
 public class BluetoothEnabledReceiver extends BroadcastReceiver {
 	//	JAC: I wish I knew what was the right pattern for accessing 
