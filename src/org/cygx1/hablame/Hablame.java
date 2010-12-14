@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ public class Hablame extends Activity implements View.OnClickListener {
 	
 	Button button;
 	MediaRecorder recorder;
+	MediaPlayer player;
 	AudioManager audioManager;
 	
 	static final int STATE_IDLE = 0;
@@ -48,6 +50,7 @@ public class Hablame extends Activity implements View.OnClickListener {
         BluetoothEnabledReceiver.setHablameActivity( this);
         
         recorder = new MediaRecorder();
+        player = new MediaPlayer();
 	    audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 
 	    button = (Button)findViewById(R.id.Button01);
@@ -118,7 +121,6 @@ public class Hablame extends Activity implements View.OnClickListener {
 		} else if( state == STATE_RECORDING) {
 			recorder.stop();
 			recorder.release();
-			
 			audioManager.stopBluetoothSco();
 
 			Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
@@ -138,15 +140,29 @@ public class Hablame extends Activity implements View.OnClickListener {
         String recipient = prefs.getString(getString(R.string.recipientPref), null);
         String subject = prefs.getString(getString(R.string.subjectPref), null);
         
-        // Format the subject using strftime escapes
+		//	Peek file duration
+        int duration = 0;
+		try {
+			player.setDataSource(path);
+			player.prepare();
+			duration = player.getDuration();
+		} catch (IOException e) {
+			Log.e( this.getClass().getName(), "Error getting recording duration", e);
+		}
+		int seconds = duration / 1000;
+		int minutes = seconds / 60;
+		seconds -= minutes*60;
+
+		// TL: Format the subject using strftime escapes
+		/* JAC: Format with recording duration instead (below)
         Time now = new Time();
         now.setToNow();
-        subject = now.format(subject);
+        subject = now.format(subject); */
+		subject = recipient.substring(0, 1) + minutes + ":" + seconds;
  
 		final Intent emailIntent = new Intent(Intent.ACTION_SEND);
 		emailIntent.setType("message/rfc822");
-		emailIntent.putExtra(Intent.EXTRA_SUBJECT,
-				subject);
+		emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
 		emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipient});
 		emailIntent.putExtra(android.content.Intent.EXTRA_STREAM, Uri.parse("file://" + path));
 		startActivityForResult(emailIntent, EMAIL_SEND_RESULT);
