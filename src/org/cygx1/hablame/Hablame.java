@@ -2,6 +2,8 @@ package org.cygx1.hablame;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,6 +14,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,7 +51,6 @@ public class Hablame extends Activity implements View.OnClickListener {
 	    audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 
 	    button = (Button)findViewById(R.id.Button01);
-        
         button.setOnClickListener(this);
     }
     
@@ -65,13 +67,11 @@ public class Hablame extends Activity implements View.OnClickListener {
 	    
 	    recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 	    //	Recording from bluetooth headset requires mono, 8kHz
-	    //recorder.setAudioSamplingRate( 8*1024);
 	    recorder.setAudioChannels( 1);
 	    recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 	    recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 	    recorder.setOutputFile(outputFile.getAbsolutePath());
 
-	    //am.setMicrophoneMute(true);
 	    audioManager.setBluetoothScoOn(true);
 
 	    try {
@@ -96,6 +96,20 @@ public class Hablame extends Activity implements View.OnClickListener {
 			//	will happen when we receive the notification that the
 			//	connection succeeded
 		    audioManager.startBluetoothSco();
+		    
+		    new Timer().schedule(new TimerTask() {
+				public void run() {
+					//	After the timeout, bluetooth didn't connect. So give up
+					if( state == STATE_CONNECTING_BLUETOOTH) {
+						Log.d("Hablame","timed out waiting for bluetooth. Using built-in mic");
+						runOnUiThread(new Runnable() {
+							public void run() {
+								Hablame.this.startRecording();
+							}
+						});
+					}
+				}
+			}, 3000);
 		    
 		    state = STATE_CONNECTING_BLUETOOTH;
 		    button.setText("[Connecting to bluetooth]");
