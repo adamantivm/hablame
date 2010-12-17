@@ -4,6 +4,4 @@
     <string name="app_name">Hablame</string>
 	<string name="app_prefs">Hablame Preferences</string>
 	<string name="recipientPref">recipientPref</string>
-	<string name="subjectPref">subjectPref</string>
-	<string name="defaultSubject">Voice %m/%d %I:%M%p</string>
 </resources>

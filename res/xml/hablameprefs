@@ -3,8 +3,4 @@
 	<EditTextPreference android:key="@string/recipientPref"
 		android:persistent="true" android:title="Recipient email"
 		android:summary="Who to send it to" />
-	<EditTextPreference android:key="@string/subjectPref"
-		android:persistent="true" android:title="Subject"
-		android:summary="Email subject (supports strftime format strings)"
-		android:defaultValue="@string/defaultSubject" /> 
 </PreferenceScreen>

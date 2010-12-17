@@ -2,6 +2,7 @@ package org.cygx1.hablame;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Formatter;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,7 +15,6 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -138,7 +138,6 @@ public class Hablame extends Activity implements View.OnClickListener {
 		// Get my email address out of preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String recipient = prefs.getString(getString(R.string.recipientPref), null);
-        String subject = prefs.getString(getString(R.string.subjectPref), null);
         
 		//	Peek file duration
         int duration = 0;
@@ -153,12 +152,9 @@ public class Hablame extends Activity implements View.OnClickListener {
 		int minutes = seconds / 60;
 		seconds -= minutes*60;
 
-		// TL: Format the subject using strftime escapes
-		/* JAC: Format with recording duration instead (below)
-        Time now = new Time();
-        now.setToNow();
-        subject = now.format(subject); */
-		subject = recipient.substring(0, 1) + minutes + ":" + seconds;
+		/* JAC: Format with recording duration */
+		String subject = String.format("%s%d:%02d",
+				recipient.substring(0, 1).toUpperCase(), minutes, seconds);
  
 		final Intent emailIntent = new Intent(Intent.ACTION_SEND);
 		emailIntent.setType("message/rfc822");
@@ -174,15 +170,15 @@ public class Hablame extends Activity implements View.OnClickListener {
 			// TODO: figure out why the result code is always 0 (RESULT_CANCELED)
 			if (RESULT_OK == resultCode) {
 				// The user sent successfully
-				Toast.makeText( Hablame.this, "Email sent successfully", Toast.LENGTH_SHORT).show();
+				//Toast.makeText( Hablame.this, "Email sent successfully", Toast.LENGTH_SHORT).show();
 				return;
 			} else {
 				// They canceled sending
-				Toast.makeText( Hablame.this, "Email send canceled", Toast.LENGTH_SHORT).show();
+				//Toast.makeText( Hablame.this, "Email send canceled", Toast.LENGTH_SHORT).show();
 				return;
 			}
 		}
-		Toast.makeText( Hablame.this, "Unexpected activity result found", Toast.LENGTH_SHORT).show();
+		//Toast.makeText( Hablame.this, "Unexpected activity result found", Toast.LENGTH_SHORT).show();
 	}
 	
 	/**
