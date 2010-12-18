@@ -2,7 +2,6 @@ package org.cygx1.hablame;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Formatter;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -157,9 +156,12 @@ public class Hablame extends Activity implements View.OnClickListener {
 				recipient.substring(0, 1).toUpperCase(), minutes, seconds);
  
 		final Intent emailIntent = new Intent(Intent.ACTION_SEND);
-		emailIntent.setType("message/rfc822");
+		emailIntent.setType("audio/3gpp");
 		emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
 		emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipient});
+		// Initialize the body of the message with some text so that
+		// it doesn't prompt on send
+		emailIntent.putExtra(Intent.EXTRA_TEXT, "<3");
 		emailIntent.putExtra(android.content.Intent.EXTRA_STREAM, Uri.parse("file://" + path));
 		startActivityForResult(emailIntent, EMAIL_SEND_RESULT);
 	}
