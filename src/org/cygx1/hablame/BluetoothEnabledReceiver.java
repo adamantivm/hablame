@@ -24,7 +24,7 @@ public class BluetoothEnabledReceiver extends BroadcastReceiver {
 			//	it was overriden by timeout
 			if( hablame.state == Hablame.STATE_CONNECTING_BLUETOOTH) {
 				Log.d( this.getClass().getName(), "bluetooth connected!");
-				hablame.startRecording();
+				hablame.startRecording( true);
 			} else {
 				Log.d( this.getClass().getName(), "overriden by timer");
 			}

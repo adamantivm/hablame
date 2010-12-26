@@ -56,26 +56,27 @@ public class Hablame extends Activity implements View.OnClickListener {
         button.setOnClickListener(this);
     }
     
-    void startRecording() {
+    void startRecording( boolean withBluetooth) {
 		// create a File object for the parent directory
 		File snapDirectory = new File("/sdcard/cygx1/hablame/");
 		// have the object build the directory structure, if needed.
 		snapDirectory.mkdirs();
+
 		// create a File object for the output file
 		outputFile = new File(snapDirectory, String.format(
 				"h%d.3gp", System.currentTimeMillis()));
 
-	    // could use setPreviewDisplay() to display a preview to suitable View here
-	    
+
+	    audioManager.setBluetoothScoOn( withBluetooth);
+
+	    // could use setPreviewDisplay() to display a preview to suitable View here 
 	    recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 	    //	Recording from bluetooth headset requires mono, 8kHz
 	    recorder.setAudioChannels( 1);
 	    recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 	    recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 	    recorder.setOutputFile(outputFile.getAbsolutePath());
-
-	    audioManager.setBluetoothScoOn(true);
-
+	    
 	    try {
 			recorder.prepare();
 		    recorder.start();				
@@ -106,7 +107,7 @@ public class Hablame extends Activity implements View.OnClickListener {
 						Log.d("Hablame","timed out waiting for bluetooth. Using built-in mic");
 						runOnUiThread(new Runnable() {
 							public void run() {
-								Hablame.this.startRecording();
+								Hablame.this.startRecording( false);
 							}
 						});
 					}
@@ -119,7 +120,8 @@ public class Hablame extends Activity implements View.OnClickListener {
 
 		} else if( state == STATE_RECORDING) {
 			recorder.stop();
-			recorder.release();
+			//recorder.release();
+			audioManager.setBluetoothScoOn(false);
 			audioManager.stopBluetoothSco();
 
 			Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
@@ -144,6 +146,7 @@ public class Hablame extends Activity implements View.OnClickListener {
 			player.setDataSource(path);
 			player.prepare();
 			duration = player.getDuration();
+			player.reset();
 		} catch (IOException e) {
 			Log.e( this.getClass().getName(), "Error getting recording duration", e);
 		}
