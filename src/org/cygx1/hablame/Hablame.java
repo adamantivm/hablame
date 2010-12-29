@@ -46,7 +46,9 @@ public class Hablame extends Activity implements View.OnClickListener {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    	Log.d( this.getClass().getName(), "onCreate");
+
+    	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
         BluetoothEnabledReceiver.setHablameActivity( this);
@@ -58,15 +60,21 @@ public class Hablame extends Activity implements View.OnClickListener {
 	    button = (Button)findViewById(R.id.Button01);
         button.setOnClickListener(this);
     }
-    
+	protected void onDestroy() {
+		//	TODO: Trap possible accidental "back" button and ask for confirmation of deleted recording?
+		super.onDestroy();
+    	// TL: attempt to prevent some force closes by cleaning up after
+    	// ourselves. Shut down the recorder
+    	recorder.release();
+	}
+
+	protected void onStart() {
+		super.onStart();
+	}
     public void onStop() {
     	super.onStop();
-    	// TL: attempt to prevent some force closes by cleaning up after
-    	// ourselves.
-    	// Shut down the recorder
-    	recorder.release();
     }
-    
+
     void startRecording( boolean withBluetooth) {
         setContentView(R.layout.record);
         clock = (Chronometer)findViewById(R.id.Chronometer01);
@@ -113,7 +121,6 @@ public class Hablame extends Activity implements View.OnClickListener {
 		// Start the timer counting up
 		clock.start();
 
-//		Toast.makeText( Hablame.this, "Recording started", Toast.LENGTH_SHORT).show();
 		state = STATE_RECORDING;
 	    button.setEnabled(true);
     }
@@ -147,9 +154,8 @@ public class Hablame extends Activity implements View.OnClickListener {
 
 		} else if( state == STATE_RECORDING) {
 			recorder.stop();
-			// TL: also reset the recorder after we finished recording?
-			// recorder.reset();
-			//recorder.release();
+			//	Logic would indicate reset here. But even if you do, the underlying native code
+			//	will fail to reset because it didn't finish stopping, despite having returned from the stop() call
 			audioManager.setBluetoothScoOn(false);
 			audioManager.stopBluetoothSco();
 			
@@ -243,4 +249,5 @@ public class Hablame extends Activity implements View.OnClickListener {
 		}
 		return (super.onOptionsItemSelected(item));
 	}
+
 }
