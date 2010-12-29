@@ -15,6 +15,7 @@
     <receiver android:name="BluetoothEnabledReceiver"><intent-filter><action android:name="android.media.SCO_AUDIO_STATE_CHANGED"></action>    
 </intent-filter>
 </receiver>
+
 </application>
 
 

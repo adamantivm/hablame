@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical">
+
+	<LinearLayout android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:id="@+id/LinearLayout01">
+		<TextView android:text="Recording length: " android:id="@+id/TextView01"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		<Chronometer android:text="@+id/Chronometer01" android:id="@+id/Chronometer01"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"></Chronometer>
+	</LinearLayout>
+
+	<LinearLayout android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:id="@+id/LinearLayout01">
+		<TextView android:text="Recording source: " android:id="@+id/TextView02"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		<TextView android:text="unknown" android:id="@+id/RecordingSource"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+	</LinearLayout>
+
+	<Button android:text="Stop recording" android:id="@+id/StopRecording"
+		android:layout_width="match_parent" android:layout_height="match_parent"
+		android:textSize="36px"></Button>
+
+</LinearLayout>
