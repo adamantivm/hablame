@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 public class Hablame extends Activity implements View.OnClickListener {
 	
-	Button button;
+	Button button, playButton;
 	MediaRecorder recorder;
 	MediaPlayer player;
 	AudioManager audioManager;
@@ -54,6 +54,9 @@ public class Hablame extends Activity implements View.OnClickListener {
 
 	    button = (Button)findViewById(R.id.Button01);
         button.setOnClickListener(this);
+        
+        playButton = (Button)findViewById(R.id.Playback);
+        playButton.setOnClickListener(this);
     }
     
     void startRecording( boolean withBluetooth) {
@@ -93,44 +96,50 @@ public class Hablame extends Activity implements View.OnClickListener {
     }
 
 	public void onClick(View v) {
-		// 	TODO: Decouple / generalize / clean-up state machine implementation
-		if( state == STATE_IDLE) {
-			//	Start connection to bluetooth headset. The rest
-			//	will happen when we receive the notification that the
-			//	connection succeeded
-		    audioManager.startBluetoothSco();
-		    
-		    new Timer().schedule(new TimerTask() {
-				public void run() {
-					//	After the timeout, bluetooth didn't connect. So give up
-					if( state == STATE_CONNECTING_BLUETOOTH) {
-						Log.d("Hablame","timed out waiting for bluetooth. Using built-in mic");
-						runOnUiThread(new Runnable() {
-							public void run() {
-								Hablame.this.startRecording( false);
-							}
-						});
+		if( v == button) {
+			// 	TODO: Decouple / generalize / clean-up state machine implementation
+			if( state == STATE_IDLE) {
+				//	Start connection to bluetooth headset. The rest
+				//	will happen when we receive the notification that the
+				//	connection succeeded
+			    audioManager.startBluetoothSco();
+			    
+			    new Timer().schedule(new TimerTask() {
+					public void run() {
+						//	After the timeout, bluetooth didn't connect. So give up
+						if( state == STATE_CONNECTING_BLUETOOTH) {
+							Log.d("Hablame","timed out waiting for bluetooth. Using built-in mic");
+							runOnUiThread(new Runnable() {
+								public void run() {
+									Hablame.this.startRecording( false);
+								}
+							});
+						}
 					}
-				}
-			}, 3000);
-		    
-		    state = STATE_CONNECTING_BLUETOOTH;
-		    button.setText("[Connecting to bluetooth]");
-		    button.setEnabled(false);
-
-		} else if( state == STATE_RECORDING) {
-			recorder.stop();
-			//recorder.release();
-			audioManager.setBluetoothScoOn(false);
-			audioManager.stopBluetoothSco();
-
-			Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
-			state = STATE_IDLE;
-		    button.setText("Start Recording");
-		    
-		    sendEmail();
-		    // TODO: delete output file after sending
-		    outputFile = null;
+				}, 3000);
+			    
+			    state = STATE_CONNECTING_BLUETOOTH;
+			    button.setText("[Connecting to bluetooth]");
+			    button.setEnabled(false);
+	
+			} else if( state == STATE_RECORDING) {
+				recorder.stop();
+				//recorder.release();
+				audioManager.setBluetoothScoOn(false);
+				audioManager.stopBluetoothSco();
+	
+				Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
+				state = STATE_IDLE;
+			    button.setText("Start Recording");
+			    
+			    sendEmail();
+			    // TODO: delete output file after sending
+			    outputFile = null;
+			}
+		} else if(v == playButton) {
+			Intent iPlayback = new Intent(this, HablamePlayback.class);
+			iPlayback.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+			startActivity( iPlayback);
 		}
 	}
 	
