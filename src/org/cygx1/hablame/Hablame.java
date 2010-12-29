@@ -19,11 +19,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Hablame extends Activity implements View.OnClickListener {
 	
-	Button button, playButton;
+	Button button, stopRecording, playButton;
+	Chronometer clock;
 	MediaRecorder recorder;
 	MediaPlayer player;
 	AudioManager audioManager;
@@ -43,7 +46,9 @@ public class Hablame extends Activity implements View.OnClickListener {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    	Log.d( this.getClass().getName(), "onCreate");
+
+    	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
         BluetoothEnabledReceiver.setHablameActivity( this);
@@ -58,8 +63,27 @@ public class Hablame extends Activity implements View.OnClickListener {
         playButton = (Button)findViewById(R.id.Playback);
         playButton.setOnClickListener(this);
     }
-    
+	protected void onDestroy() {
+		//	TODO: Trap possible accidental "back" button and ask for confirmation of deleted recording?
+		super.onDestroy();
+    	// TL: attempt to prevent some force closes by cleaning up after
+    	// ourselves. Shut down the recorder
+    	recorder.release();
+	}
+
+	protected void onStart() {
+		super.onStart();
+	}
+    public void onStop() {
+    	super.onStop();
+    }
+
     void startRecording( boolean withBluetooth) {
+        setContentView(R.layout.record);
+        clock = (Chronometer)findViewById(R.id.Chronometer01);
+		stopRecording = (Button)findViewById(R.id.StopRecording);
+		stopRecording.setOnClickListener(this);
+
 		// create a File object for the parent directory
 		File snapDirectory = new File("/sdcard/cygx1/hablame/");
 		// have the object build the directory structure, if needed.
@@ -69,10 +93,18 @@ public class Hablame extends Activity implements View.OnClickListener {
 		outputFile = new File(snapDirectory, String.format(
 				"h%d.3gp", System.currentTimeMillis()));
 
-
+		// Update informational widgets
+		TextView recordingSource = (TextView)findViewById(R.id.RecordingSource);
+		if (withBluetooth) {
+			recordingSource.setText("bluetooth");
+		} else {
+			recordingSource.setText("built-in mic");
+		}
+		
 	    audioManager.setBluetoothScoOn( withBluetooth);
 
-	    // could use setPreviewDisplay() to display a preview to suitable View here 
+	    // could use setPreviewDisplay() to display a preview to suitable View here
+	    recorder.reset();
 	    recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
 	    //	Recording from bluetooth headset requires mono, 8kHz
 	    recorder.setAudioChannels( 1);
@@ -88,14 +120,17 @@ public class Hablame extends Activity implements View.OnClickListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		// Start the timer counting up
+		clock.start();
 
-//		Toast.makeText( Hablame.this, "Recording started", Toast.LENGTH_SHORT).show();
 		state = STATE_RECORDING;
-	    button.setText("Stop recording");
 	    button.setEnabled(true);
     }
 
 	public void onClick(View v) {
+		Log.d("Hablame", "In onClick, state is " + state);		
+
 		if( v == button) {
 			// 	TODO: Decouple / generalize / clean-up state machine implementation
 			if( state == STATE_IDLE) {
@@ -124,17 +159,27 @@ public class Hablame extends Activity implements View.OnClickListener {
 	
 			} else if( state == STATE_RECORDING) {
 				recorder.stop();
-				//recorder.release();
+				//	Logic would indicate reset here. But even if you do, the underlying native code
+				//	will fail to reset because it didn't finish stopping, despite having returned from the stop() call
 				audioManager.setBluetoothScoOn(false);
 				audioManager.stopBluetoothSco();
 	
+				// Stop UI displays
+				clock.stop();
+
 				Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
 				state = STATE_IDLE;
-			    button.setText("Start Recording");
 			    
 			    sendEmail();
 			    // TODO: delete output file after sending
 			    outputFile = null;
+
+			    // Switch back to the main view
+		        setContentView(R.layout.main);
+		        button = (Button)findViewById(R.id.Button01);
+			    button.setText("Start Recording");
+			    button.setEnabled(true);
+		        button.setOnClickListener(this);
 			}
 		} else if(v == playButton) {
 			Intent iPlayback = new Intent(this, HablamePlayback.class);
@@ -214,4 +259,5 @@ public class Hablame extends Activity implements View.OnClickListener {
 		}
 		return (super.onOptionsItemSelected(item));
 	}
+
 }
