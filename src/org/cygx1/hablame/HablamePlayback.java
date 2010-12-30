@@ -62,7 +62,7 @@ public class HablamePlayback extends Activity implements View.OnClickListener {
 			Log.d( this.getClass().getName(),"Unknown button clicked: " + v);
 		}
 	}
-	
+
 	private void stopPlayback() {
 		if( player.isPlaying()) {
 			player.pause();
@@ -71,13 +71,14 @@ public class HablamePlayback extends Activity implements View.OnClickListener {
 			currentPosition = -1;
 		}
 	}
-	
+
 	private void goToRecording() {
 		Intent iRecording = new Intent(this,HablameRecording.class);
 		iRecording.addFlags( Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+		iRecording.setAction( Hablame.ACTION_RECORDING_RESUME);
 		startActivity(iRecording);
 	}
-	
+
 	private void startPlayback() {
 		//	Ignore a 'play' button if we're already playing
 		if( player.isPlaying()) 

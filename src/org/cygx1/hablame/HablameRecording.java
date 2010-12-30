@@ -2,6 +2,7 @@ package org.cygx1.hablame;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -39,11 +40,11 @@ public class HablameRecording extends Activity implements View.OnClickListener {
 	static final int STATE_CONNECTING_BLUETOOTH = 2;
 	int state = STATE_IDLE;
 	
-	private static final int PREFS_ID = 0;
 	private static final int EMAIL_SEND_RESULT = 0;
 	
 	// To store the output file
-	static File outputFile = null;
+	private String fileNameBase = null;
+	private int sequenceNumber = -1;
 	
     /** Called when the activity is first created. */
     @Override
@@ -70,15 +71,22 @@ public class HablameRecording extends Activity implements View.OnClickListener {
     	// TL: attempt to prevent some force closes by cleaning up after
     	// ourselves. Shut down the recorder
     	recorder.release();
-	}
+	}	
 	
 	protected void onResume() {
 		Log.d(getClass().getName(),"onResume");
 		super.onResume();
 	}
+	protected void onNewIntent( Intent newIntent) {
+		super.onNewIntent(newIntent);
+		setIntent(newIntent);
+	}
 
+	/**
+	 * This is called whenever the application is called. Either for the first time
+	 * or during subsequent times
+	 */
 	protected void onStart() {
-		Log.d(getClass().getName(),"onStart");
 		super.onStart();
 	    launchRecording();
 	}
@@ -93,15 +101,19 @@ public class HablameRecording extends Activity implements View.OnClickListener {
      * @param withBluetooth	use bluetooth or not (internal mic)
      */
     void startRecording( boolean withBluetooth) {
-
 		// create a File object for the parent directory
 		File snapDirectory = new File("/sdcard/cygx1/hablame/");
 		// have the object build the directory structure, if needed.
 		snapDirectory.mkdirs();
+		
+		
+		if( getIntent().getAction() == Hablame.ACTION_RECORDING_START || sequenceNumber == -1) {
+			fileNameBase = snapDirectory + File.separator + String.format("h%d", System.currentTimeMillis());
+		}
 
 		// create a File object for the output file
-		outputFile = new File(snapDirectory, String.format(
-				"h%d.3gp", System.currentTimeMillis()));
+		String path = fileNameBase + "-" + (++sequenceNumber) + ".3gp";
+		Log.d(getClass().getName(), "File name = " + path);
 
 		// Update informational widgets
 		if (withBluetooth) {
@@ -119,7 +131,7 @@ public class HablameRecording extends Activity implements View.OnClickListener {
 	    recorder.setAudioChannels( 1);
 	    recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 	    recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-	    recorder.setOutputFile(outputFile.getAbsolutePath());
+	    recorder.setOutputFile( path);
 
 	    try {
 			recorder.prepare();
@@ -181,7 +193,8 @@ public class HablameRecording extends Activity implements View.OnClickListener {
 
 		    sendEmail();
 		    // TODO: delete output file after sending
-		    outputFile = null;
+		    sequenceNumber = -1;
+		    fileNameBase = null;
 
 		} else if(v == backToPlayback) {
 			//	TODO: Leave everything ready for a resume
@@ -197,21 +210,37 @@ public class HablameRecording extends Activity implements View.OnClickListener {
 	}
 
 	public void sendEmail() {
-		String path = outputFile.getAbsolutePath();		
+		if( sequenceNumber == -1) {
+			Log.w(getClass().getName(), "sendEmail called with no saved messages? sequenceNumber == -1");
+			return;
+		}
+		
 		// Get my email address out of preferences
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String recipient = prefs.getString(getString(R.string.recipientPref), null);
+
+		final Intent emailIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+		emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipient});
+		emailIntent.setType("audio/3gpp");
+		// Initialize the body of the message with some text so that
+		// it doesn't prompt on send
+		emailIntent.putExtra(Intent.EXTRA_TEXT, "<3");
         
 		//	Peek file duration
         int duration = 0;
-		try {
-			player.setDataSource(path);
-			player.prepare();
-			duration = player.getDuration();
-			player.reset();
-		} catch (IOException e) {
-			Log.e( this.getClass().getName(), "Error getting recording duration", e);
-		}
+        ArrayList<Uri> uris = new ArrayList<Uri>();
+        for(int i=0;i<=sequenceNumber;i++) {
+    		String path = fileNameBase + "-" + i + ".3gp";
+			try {
+				player.setDataSource(path);
+				player.prepare();
+				duration += player.getDuration();
+				player.reset();
+			} catch (IOException e) {
+				Log.e( this.getClass().getName(), "Error getting recording duration", e);
+			}
+			uris.add(Uri.parse( "file://" + path));
+        }
 		int seconds = duration / 1000;
 		int minutes = seconds / 60;
 		seconds -= minutes*60;
@@ -219,15 +248,8 @@ public class HablameRecording extends Activity implements View.OnClickListener {
 		/* JAC: Format with recording duration */
 		String subject = String.format("%s%d:%02d",
 				recipient.substring(0, 1).toUpperCase(), minutes, seconds);
- 
-		final Intent emailIntent = new Intent(Intent.ACTION_SEND);
-		emailIntent.setType("audio/3gpp");
-		emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-		emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipient});
-		// Initialize the body of the message with some text so that
-		// it doesn't prompt on send
-		emailIntent.putExtra(Intent.EXTRA_TEXT, "<3");
-		emailIntent.putExtra(android.content.Intent.EXTRA_STREAM, Uri.parse("file://" + path));
+ 		emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+		emailIntent.putParcelableArrayListExtra(android.content.Intent.EXTRA_STREAM, uris);
 		startActivityForResult(emailIntent, EMAIL_SEND_RESULT);
 	}
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {

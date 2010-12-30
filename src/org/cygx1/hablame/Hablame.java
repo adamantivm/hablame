@@ -29,7 +29,9 @@ public class Hablame extends Activity implements View.OnClickListener {
 	Button button, playButton;
 	
 	private static final int PREFS_ID = 0;
-	private static final int EMAIL_SEND_RESULT = 0;
+	
+	static final String ACTION_RECORDING_RESUME = "recording_resume";
+	static final String ACTION_RECORDING_START = "recording_start";
 	
 	// To store the output file
 	static File outputFile = null;
@@ -51,6 +53,7 @@ public class Hablame extends Activity implements View.OnClickListener {
 		if(v == button) {
 			Intent iRecording = new Intent( this, HablameRecording.class);
 			iRecording.setFlags( Intent.FLAG_ACTIVITY_SINGLE_TOP);
+			iRecording.setAction( ACTION_RECORDING_START);
 			startActivity( iRecording);
 		} else if(v == playButton) {
 			Intent iPlayback = new Intent( this, HablamePlayback.class);
