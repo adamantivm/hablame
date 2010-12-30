@@ -13,6 +13,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -20,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +32,8 @@ public class Hablame extends Activity implements View.OnClickListener {
 	MediaRecorder recorder;
 	MediaPlayer player;
 	AudioManager audioManager;
+	ProgressBar amplitude;
+	Timer ampTimer;
 	
 	static final int STATE_IDLE = 0;
 	static final int STATE_RECORDING = 1;
@@ -42,6 +46,19 @@ public class Hablame extends Activity implements View.OnClickListener {
 	
 	// To store the output file
 	static File outputFile = null;
+	
+	// For updating the amplitude bar while recording
+	private Runnable updateRecordAmplitudeTask = new Runnable() {
+		public void run() {
+    		int max = recorder.getMaxAmplitude();
+    		int amp = (int) Math.round(100.0*max / 32767);
+    		amplitude.setProgress(amp);
+    		Log.d("Hablame", "Max amplitude: " + max);
+    		amplitudeHandler.postDelayed(updateRecordAmplitudeTask, AMPLITUDE_UPDATE_FREQ);
+		}
+	};
+	private Handler amplitudeHandler = new Handler();
+	private static final int AMPLITUDE_UPDATE_FREQ = 100;
 	
     /** Called when the activity is first created. */
     @Override
@@ -72,6 +89,8 @@ public class Hablame extends Activity implements View.OnClickListener {
         clock = (Chronometer)findViewById(R.id.Chronometer01);
 		stopRecording = (Button)findViewById(R.id.StopRecording);
 		stopRecording.setOnClickListener(this);
+		amplitude = (ProgressBar)findViewById(R.id.RecordingAmplitude);
+		amplitude.setProgress(50);
 
 		// create a File object for the parent directory
 		File snapDirectory = new File("/sdcard/cygx1/hablame/");
@@ -100,6 +119,10 @@ public class Hablame extends Activity implements View.OnClickListener {
 	    recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 	    recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 	    recorder.setOutputFile(outputFile.getAbsolutePath());
+	    
+	    // Schedule a periodic timer to display the audio amplitude
+	    amplitudeHandler.removeCallbacks(updateRecordAmplitudeTask);
+	    amplitudeHandler.postDelayed(updateRecordAmplitudeTask, AMPLITUDE_UPDATE_FREQ);
 	    
 	    try {
 			recorder.prepare();
@@ -155,6 +178,7 @@ public class Hablame extends Activity implements View.OnClickListener {
 			
 			// Stop UI displays
 			clock.stop();
+			amplitudeHandler.removeCallbacks(updateRecordAmplitudeTask);
 
 			Toast.makeText( Hablame.this, "Recording stopped", Toast.LENGTH_SHORT).show();
 			state = STATE_IDLE;
