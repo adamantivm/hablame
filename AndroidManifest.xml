@@ -22,7 +22,8 @@
 		</receiver>
 
 		<activity android:screenOrientation="portrait" android:name="HablamePlayback"></activity>
-	</application>
+	<activity android:name="HablameRecording" android:screenOrientation="portrait"></activity>
+</application>
 
 
 	<uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>

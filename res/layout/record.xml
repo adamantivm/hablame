@@ -19,8 +19,8 @@
 			android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
 	</LinearLayout>
 
-	<Button android:text="Stop recording" android:id="@+id/StopRecording"
-		android:layout_width="match_parent" android:layout_height="match_parent"
-		android:textSize="36px"></Button>
+	<Button android:id="@+id/StopRecording"
+		android:textSize="36px" android:layout_height="wrap_content" android:layout_width="match_parent" android:text="Stop and Send"></Button>
 
+<Button android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="36px" android:id="@+id/ToPlayback" android:text="Jump to Playback"></Button>
 </LinearLayout>

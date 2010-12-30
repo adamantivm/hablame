@@ -11,10 +11,10 @@ public class BluetoothEnabledReceiver extends BroadcastReceiver {
 	//	the Activity object instance from a Receiver. Meanwhile, I'm using
 	//	a static setter
 	
-	static Hablame hablame;
+	static HablameRecording hablameRecording;
 	
-	static void setHablameActivity( Hablame hablame) {
-		BluetoothEnabledReceiver.hablame = hablame;
+	static void setHablameRecordingActivity( HablameRecording hablameRecording) {
+		BluetoothEnabledReceiver.hablameRecording = hablameRecording;
 	}
 	
 	public void onReceive(Context context, Intent intent) {
@@ -22,9 +22,9 @@ public class BluetoothEnabledReceiver extends BroadcastReceiver {
 		if( state != null && state.equals(AudioManager.SCO_AUDIO_STATE_CONNECTED)) {
 			//	Check if the state is still waiting for bluetooth connection, in case
 			//	it was overriden by timeout
-			if( hablame.state == Hablame.STATE_CONNECTING_BLUETOOTH) {
+			if( hablameRecording.state == HablameRecording.STATE_CONNECTING_BLUETOOTH) {
 				Log.d( this.getClass().getName(), "bluetooth connected!");
-				hablame.startRecording( true);
+				hablameRecording.startRecording( true);
 			} else {
 				Log.d( this.getClass().getName(), "overriden by timer");
 			}

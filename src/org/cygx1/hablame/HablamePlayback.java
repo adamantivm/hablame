@@ -39,7 +39,18 @@ public class HablamePlayback extends Activity implements View.OnClickListener {
 	    
 	    //	TODO: use file from parameter instead of hardcoded test
 	    currentPlayback = "/sdcard/cygx1/hablame/test.3gp";
-	    
+	}
+	protected void onDestroy() {
+		super.onDestroy();
+		if( player.isPlaying()) {
+			player.stop();
+		}
+		player.release();
+	}
+	
+	protected void onStart() {
+		Log.d(getClass().getName(),"onStart");
+		super.onStart();
 	    startPlayback();
 	}
 
@@ -62,7 +73,7 @@ public class HablamePlayback extends Activity implements View.OnClickListener {
 	}
 	
 	private void goToRecording() {
-		Intent iRecording = new Intent(this,Hablame.class);
+		Intent iRecording = new Intent(this,HablameRecording.class);
 		iRecording.addFlags( Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		startActivity(iRecording);
 	}
@@ -89,11 +100,5 @@ public class HablamePlayback extends Activity implements View.OnClickListener {
 			player.seekTo(Math.max(0, currentPosition-REW_MILLIS));
 			player.start();
 		}	
-	}
-
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		startPlayback();
 	}
 }
