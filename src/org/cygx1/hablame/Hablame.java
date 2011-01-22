@@ -1,30 +1,14 @@
 package org.cygx1.hablame;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Chronometer;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 public class Hablame extends Activity implements View.OnClickListener {
 	
