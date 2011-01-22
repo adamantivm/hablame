@@ -244,7 +244,9 @@ public class HablameRecording extends Activity implements View.OnClickListener {
         String recipient = prefs.getString(getString(R.string.recipientPref), null);
 
 		final Intent emailIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-		emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipient});
+		if (null != recipient) {
+			emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{recipient});
+		}
 		emailIntent.setType("audio/3gpp");
 		// Initialize the body of the message with some text so that
 		// it doesn't prompt on send
@@ -270,8 +272,13 @@ public class HablameRecording extends Activity implements View.OnClickListener {
 		seconds -= minutes*60;
 
 		/* JAC: Format with recording duration */
-		String subject = String.format("%s%d:%02d",
-				recipient.substring(0, 1).toUpperCase(), minutes, seconds);
+		String prefix;
+		if (null == recipient) {
+			prefix = "?";
+		} else {
+			prefix = recipient.substring(0, 1).toUpperCase(); 
+		}
+		String subject = String.format("%s%d:%02d", prefix, minutes, seconds);
  		emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
 		emailIntent.putParcelableArrayListExtra(android.content.Intent.EXTRA_STREAM, uris);
 		startActivityForResult(emailIntent, EMAIL_SEND_RESULT);
